@@ -18,7 +18,43 @@ public class WebJava {
      private Set<String> pagesVisited = new HashSet<String>();
     private List<String> pagesToVisit = new LinkedList<String>();
 
-    public void download(String string, String string0) {
+    private String nextUrl()
+    {
+        String nextUrl;
+        do
+        {
+            nextUrl = this.pagesToVisit.remove(0);
+        } while(this.pagesVisited.contains(nextUrl));
+        this.pagesVisited.add(nextUrl);
+        return nextUrl;
     }
+    
+    public void search(String url, String searchWord)
+  {
+      while(this.pagesVisited.size() <100)
+      {
+          String currentUrl;
+          WebJavaClient leg = new WebJavaClient();
+          if(this.pagesToVisit.isEmpty())
+          {
+              currentUrl = url;
+              this.pagesVisited.add(url);
+          }
+          else
+          {
+              currentUrl = this.nextUrl();
+          }
+          leg.find(currentUrl);
+          
+          boolean success = leg.matchWord(searchWord);
+          if(success)
+          {
+              System.out.println(String.format("**Success** Word %s found at %s", searchWord, currentUrl));
+              break;
+          }
+          this.pagesToVisit.addAll(leg.nextPath());
+      }
+      System.out.println("\n**Done** Visited " + this.pagesVisited.size() + " web page(s)");
+  }
     
 }

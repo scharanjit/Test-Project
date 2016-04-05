@@ -13,6 +13,7 @@ public class TestNewClass {
 
     public static void main(String[] args) {
        
+        
         System.out.println("Draw paint");
         try {
             int i = 5 / 0;

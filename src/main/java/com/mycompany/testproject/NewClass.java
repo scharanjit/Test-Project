@@ -10,11 +10,9 @@ package com.mycompany.testproject;
  * @author charanjiths
  */
 public class NewClass {
-    public static void main(String[] args) {
-        
-        
-        
+    public static void main(String[] args){
         System.out.println("Hello GitHub");
+        
     }
     
 }

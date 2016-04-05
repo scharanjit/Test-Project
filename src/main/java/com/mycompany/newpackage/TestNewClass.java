@@ -14,8 +14,6 @@ import org.apache.commons.logging.*;
 public class TestNewClass {
 private static final Log LOGGER = LogFactory.getLog(TestNewClass.class.getName());
     public static void main(String[] args) {
-       
-       
         
         System.out.println("Draw paint");
         try {

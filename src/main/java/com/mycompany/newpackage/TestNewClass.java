@@ -5,19 +5,23 @@
  */
 package com.mycompany.newpackage;
 
+import org.apache.commons.logging.*;
+
 /**
  *
  * @author charanjiths
  */
 public class TestNewClass {
-
+private static final Log LOGGER = LogFactory.getLog(TestNewClass.class.getName());
     public static void main(String[] args) {
+       
        
         
         System.out.println("Draw paint");
         try {
             int i = 5 / 0;
         } catch (Exception e) {
+            LOGGER.info("dds");
             System.out.println("Caught");
         } finally {
             paint();

@@ -12,7 +12,7 @@ package com.imaginea.Crawler;
 public class WebJavaTest {
     public static void main(String[] args) {
         WebJava w= new WebJava();
-        w.download("http://mail-archives.apache.org/mod_mbox/maven-users/","2014");
+        w.search("http://mail-archives.apache.org/mod_mbox/maven-users/","2014");
     }
     
 }

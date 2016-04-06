@@ -5,11 +5,21 @@
  */
 package com.imaginea.Crawler;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -28,6 +38,7 @@ public class WebJava {
     private List<String> pagesToVisit = new LinkedList<String>(); //next node address
     private List<String> links = new LinkedList<String>(); // Just a list of URLs
     private Document htmlDocument;
+    private Set finalList = new HashSet();
 
     private static final String USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0";// identify themselves to web server
 
@@ -59,17 +70,20 @@ public class WebJava {
             } else {
                 currentUrl = this.nextUrl();
             }
-
+            System.out.println(currentUrl);
             find(currentUrl);  //check href of all urls & sav dem to links
 
             boolean success = matchWord(searchString); //matching the search world..2014
             if (success) {
-                System.out.println(String.format("**Success** Word %s found at %s", searchString, currentUrl));
+//                System.out.println(String.format("**Success** Word %s found at %s", searchString, currentUrl));
                 break;
             }
             this.pagesToVisit.addAll(nextPath());
+            
         }
-        System.out.println("\n**Done** Visited " + this.pagesVisited.size() + " web page(s)");
+        
+        
+//        System.out.println("\n**Done** Visited " + this.pagesVisited.size() + " web page(s)");
     }
 
     public boolean find(String currentUrl) {
@@ -93,12 +107,19 @@ public class WebJava {
             for (Element link : linksOnPage) {
                 //finding next url present on page
                 //hyperlink
-//                System.out.println(" "+link);
+                System.out.println(" "+link);
                 this.links.add(link.absUrl("href")); //adding next link in a linked list
+                }
+            
+            for(String l:links){
+               if( l.contains("2014"))
+                  
+                        finalList.add(l.substring(0,64));
             }
+            download(finalList);
+            System.out.println(finalList);
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();// We were not successful in our HTTP request
         }
         return false;
     }
@@ -112,6 +133,8 @@ public class WebJava {
         try {
             System.out.println("Searching" + searchWord + "...");
             String bodyText = this.htmlDocument.body().text();
+            Elements bodyTextq = this.htmlDocument.select(searchWord);
+            System.out.println(bodyTextq);
             String baseUrl = this.htmlDocument.baseUri();
 //        System.out.println(baseUrl);
 //        System.out.println(bodyText);
@@ -125,5 +148,38 @@ public class WebJava {
 
     public List<String> nextPath() {
         return this.links;
+    }
+    
+    public void download(Set l){
+    for(Object s :l){
+        try {
+            URL link = new URL(s.toString());
+            
+            //Code to download
+		 InputStream in = new BufferedInputStream(link.openStream());
+		 ByteArrayOutputStream out = new ByteArrayOutputStream();
+		 byte[] buf = new byte[1024];
+		 int n = 0;
+		 while (-1!=(n=in.read(buf)))
+		 {
+		    out.write(buf, 0, n);
+		 }
+		 out.close();
+		 in.close();
+		 byte[] response = out.toByteArray();
+ String name="f.txt";
+ File file= new File("/home/charanjiths/"+s.toString().substring(53, 64));
+ file.createNewFile();
+		 FileOutputStream fos = new FileOutputStream(file);
+		 fos.write(response);
+		 fos.close();
+     //End download code
+            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(WebJava.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(WebJava.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     }
 }

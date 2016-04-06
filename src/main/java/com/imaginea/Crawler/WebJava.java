@@ -23,7 +23,7 @@ public class WebJava {
         String nextUrl;
         do
         {
-            nextUrl = this.pagesToVisit.remove(0);
+            nextUrl = this.pagesToVisit.remove(0);//removes all url
         } while(this.pagesVisited.contains(nextUrl));
         this.pagesVisited.add(nextUrl);
         return nextUrl;

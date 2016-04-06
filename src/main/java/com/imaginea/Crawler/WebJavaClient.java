@@ -13,16 +13,6 @@ import java.util.Collection;
  */
 public class WebJavaClient {
 
-    void find(String currentUrl) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    boolean matchWord(String searchWord) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    Collection<? extends String> nextPath() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    
     
 }

@@ -1,4 +1,5 @@
 /*
+ * File Name: WebJava.java
  * To KNow user agent of ur browser visit  :https://user-agents.me/test/what-is-my-user-agent
  */
 package com.imaginea.Crawler;
@@ -29,23 +30,13 @@ import org.jsoup.select.Elements;
 public class WebJava {
 
     long NUMB = 1000;
-    private Set<String> pagesVisited = new HashSet<String>(); //no duplicates
-    private List<String> pagesToVisit = new LinkedList<String>(); //next node address
-    private List<String> links = new LinkedList<String>(); // Just a list of URLs
+    private Set<String> urlNavigated = new HashSet<String>();       //no duplicates
+    private List<String> urlRemaining = new LinkedList<String>();   //next node address
+    private List<String> links = new LinkedList<String>();          // Just a list of URLs
     private Document htmlDocument;
-    private Set finalList = new HashSet();
-    
-    private static final String USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0";// identify themselves to web server
+    private Set finalList = new HashSet();                          // final list carrying searchWord urls           
 
-    private String nextUrl() //always return new url
-    {
-        String nextUrl;
-        do {
-            nextUrl = this.pagesToVisit.remove(0);//removes all url
-        } while (this.pagesVisited.contains(nextUrl)); //checking in set
-        this.pagesVisited.add(nextUrl);
-        return nextUrl;
-    }
+    private static final String USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0";// identify themselves to web server
 
     /*
     *   it will take two parameters:  url & searchString
@@ -58,35 +49,34 @@ public class WebJava {
      */
     public void search(String url, String searchString) {
         try {
-            while (this.pagesVisited.size() < NUMB) {
+            while (this.urlNavigated.size() < NUMB) {
                 String currentUrl;
-                if (this.pagesToVisit.isEmpty()) {
+                if (this.urlRemaining.isEmpty()) {
                     currentUrl = url;
-                    this.pagesVisited.add(url);
+                    this.urlNavigated.add(url);
                 } else {
                     currentUrl = this.nextUrl();
                 }
-                find(currentUrl,searchString);  //check href of all urls & sav dem to links
+                find(currentUrl, searchString);  //check href of all urls & sav dem to links
 
                 boolean success = matchWord(searchString); //matching the search world..2014
                 if (success) {
                     break;
                 }
-                this.pagesToVisit.addAll(nextPath());
+                this.urlRemaining.addAll(nextPath());
 
             }
         } catch (Exception e) {
         }
 
-        
     }
 
     /*
     *   It will build a Connection using user agent of availble browser
     *   This method finds the href (hypertext reference) from the availble links
-    *   
-    */
-    public boolean find(String currentUrl,String searchString) {
+    *   after successful match found,it will call download method
+     */
+    public boolean find(String currentUrl, String searchString) {
         try {
             Connection connection = Jsoup.connect(currentUrl).userAgent(USER_AGENT);
             Document htmlDocument = connection.get();
@@ -111,10 +101,15 @@ public class WebJava {
         return false;
     }
 
+    /*
+    *   This method takes single parameter search word 
+    *   And match it to the available list of urls
+    *   It will return boolean output  true or false
+     */
+
     public boolean matchWord(String searchWord) {
         try {
             String bodyText = this.htmlDocument.body().text();
-            Elements bodyTextq = this.htmlDocument.select(searchWord);
             return bodyText.toLowerCase().contains(searchWord.toLowerCase());
         } catch (Exception ex) {
         }
@@ -124,22 +119,19 @@ public class WebJava {
 
     /*
     This method will always return the next node in the Linkedlist
-    */
+     */
     public List<String> nextPath() {
         return this.links;
     }
-    
+
     /*
     * This method will download all the files matching with search Word criteria
     *
-    */
-
+     */
     public void download(Set l) {
         for (Object s : l) {
             try {
                 URL link = new URL(s.toString());
-
-                //Code to download
                 InputStream in = new BufferedInputStream(link.openStream());
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 byte[] buf = new byte[1024];
@@ -150,18 +142,26 @@ public class WebJava {
                 out.close();
                 in.close();
                 byte[] response = out.toByteArray();
-                String name = "f.txt";
                 File file = new File("/home/charanjiths/" + s.toString().substring(53, 64));
                 file.createNewFile();
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(response);
                 fos.close();
-                //End download code
 
             } catch (MalformedURLException ex) {
             } catch (IOException ex) {
             } catch (Exception e) {
             }
         }
+    }
+
+    private String nextUrl() //always return new url
+    {
+        String nextUrl;
+        do {
+            nextUrl = this.urlRemaining.remove(0);//removes all url
+        } while (this.urlNavigated.contains(nextUrl)); //checking in set
+        this.urlNavigated.add(nextUrl);
+        return nextUrl;
     }
 }

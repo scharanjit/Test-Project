@@ -1,0 +1,7 @@
+1.) Update the USER_AGENT in WebJava.java file.
+2.) To know the USER_AGENT ,visit below link in browser 
+https://user-agents.me/test/what-is-my-user-agent
+3.) Update the directory path " /home/charanjiths/ " ,where you want to save
+the email files
+4.) Run WebJavaTest.java file to see the output.
+

@@ -1,7 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * To KNow user agent of ur browser visit  :https://user-agents.me/test/what-is-my-user-agent
  */
 package com.imaginea.Crawler;
 
@@ -13,13 +11,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -39,7 +34,7 @@ public class WebJava {
     private List<String> links = new LinkedList<String>(); // Just a list of URLs
     private Document htmlDocument;
     private Set finalList = new HashSet();
-
+    
     private static final String USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0";// identify themselves to web server
 
     private String nextUrl() //always return new url
@@ -62,62 +57,54 @@ public class WebJava {
     
      */
     public void search(String url, String searchString) {
-        while (this.pagesVisited.size() < NUMB) {
-            String currentUrl;
-            if (this.pagesToVisit.isEmpty()) {
-                currentUrl = url;
-                this.pagesVisited.add(url);
-            } else {
-                currentUrl = this.nextUrl();
-            }
-            System.out.println(currentUrl);
-            find(currentUrl);  //check href of all urls & sav dem to links
+        try {
+            while (this.pagesVisited.size() < NUMB) {
+                String currentUrl;
+                if (this.pagesToVisit.isEmpty()) {
+                    currentUrl = url;
+                    this.pagesVisited.add(url);
+                } else {
+                    currentUrl = this.nextUrl();
+                }
+                find(currentUrl,searchString);  //check href of all urls & sav dem to links
 
-            boolean success = matchWord(searchString); //matching the search world..2014
-            if (success) {
-//                System.out.println(String.format("**Success** Word %s found at %s", searchString, currentUrl));
-                break;
+                boolean success = matchWord(searchString); //matching the search world..2014
+                if (success) {
+                    break;
+                }
+                this.pagesToVisit.addAll(nextPath());
+
             }
-            this.pagesToVisit.addAll(nextPath());
-            
+        } catch (Exception e) {
         }
+
         
-        
-//        System.out.println("\n**Done** Visited " + this.pagesVisited.size() + " web page(s)");
     }
 
-    public boolean find(String currentUrl) {
+    /*
+    *   It will build a Connection using user agent of availble browser
+    *   This method finds the href (hypertext reference) from the availble links
+    *   
+    */
+    public boolean find(String currentUrl,String searchString) {
         try {
             Connection connection = Jsoup.connect(currentUrl).userAgent(USER_AGENT);
             Document htmlDocument = connection.get();
             this.htmlDocument = htmlDocument;
 
-//            if(connection.response().statusCode() == 200) // 200 is the HTTP OK status code
-//                                                          // indicating that everything is great.
-//            {
-//                System.out.println("\n**Visiting** Received web page at " + currentUrl);
-//            }
-//            if(!connection.response().contentType().contains("text/html"))
-//            {
-//                System.out.println("**Failure** Retrieved something other than HTML");
-//                return false;
-//            }
             Elements linksOnPage = htmlDocument.select("a[href]");
-            System.out.println("Found (" + linksOnPage.size() + ") links");
             for (Element link : linksOnPage) {
                 //finding next url present on page
                 //hyperlink
-                System.out.println(" "+link);
                 this.links.add(link.absUrl("href")); //adding next link in a linked list
-                }
-            
-            for(String l:links){
-               if( l.contains("2014"))
-                  
-                        finalList.add(l.substring(0,64));
             }
-            download(finalList);
-            System.out.println(finalList);
+
+            for (String l : links) {
+                if (l.contains(searchString)) {
+                    finalList.add(l.substring(0, 64));
+                }
+            }
+            download(finalList); //download the files containing searchString
             return true;
         } catch (Exception ex) {
         }
@@ -125,61 +112,56 @@ public class WebJava {
     }
 
     public boolean matchWord(String searchWord) {
-//         if(this.htmlDocument == null)
-//        {
-//            System.out.println("NO html ");
-//            return false;
-//        }
         try {
-            System.out.println("Searching" + searchWord + "...");
             String bodyText = this.htmlDocument.body().text();
             Elements bodyTextq = this.htmlDocument.select(searchWord);
-            System.out.println(bodyTextq);
-            String baseUrl = this.htmlDocument.baseUri();
-//        System.out.println(baseUrl);
-//        System.out.println(bodyText);
             return bodyText.toLowerCase().contains(searchWord.toLowerCase());
         } catch (Exception ex) {
-            ex.printStackTrace();
         }
         return false;
 
     }
 
+    /*
+    This method will always return the next node in the Linkedlist
+    */
     public List<String> nextPath() {
         return this.links;
     }
     
-    public void download(Set l){
-    for(Object s :l){
-        try {
-            URL link = new URL(s.toString());
-            
-            //Code to download
-		 InputStream in = new BufferedInputStream(link.openStream());
-		 ByteArrayOutputStream out = new ByteArrayOutputStream();
-		 byte[] buf = new byte[1024];
-		 int n = 0;
-		 while (-1!=(n=in.read(buf)))
-		 {
-		    out.write(buf, 0, n);
-		 }
-		 out.close();
-		 in.close();
-		 byte[] response = out.toByteArray();
- String name="f.txt";
- File file= new File("/home/charanjiths/"+s.toString().substring(53, 64));
- file.createNewFile();
-		 FileOutputStream fos = new FileOutputStream(file);
-		 fos.write(response);
-		 fos.close();
-     //End download code
-            
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(WebJava.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(WebJava.class.getName()).log(Level.SEVERE, null, ex);
+    /*
+    * This method will download all the files matching with search Word criteria
+    *
+    */
+
+    public void download(Set l) {
+        for (Object s : l) {
+            try {
+                URL link = new URL(s.toString());
+
+                //Code to download
+                InputStream in = new BufferedInputStream(link.openStream());
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] buf = new byte[1024];
+                int n = 0;
+                while (-1 != (n = in.read(buf))) {
+                    out.write(buf, 0, n);
+                }
+                out.close();
+                in.close();
+                byte[] response = out.toByteArray();
+                String name = "f.txt";
+                File file = new File("/home/charanjiths/" + s.toString().substring(53, 64));
+                file.createNewFile();
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(response);
+                fos.close();
+                //End download code
+
+            } catch (MalformedURLException ex) {
+            } catch (IOException ex) {
+            } catch (Exception e) {
+            }
         }
-    }
     }
 }
